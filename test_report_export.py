@@ -15,6 +15,18 @@ class ReportExportTests(unittest.TestCase):
             with self.subTest(owner_id=owner_id, requester_id=requester_id):
                 self.assertFalse(can_export_report(owner_id, requester_id, "ready"))
 
+    def test_draft_report_cannot_export(self):
+        self.assertFalse(can_export_report("account-1", "account-1", "draft"))
+
+    def test_uppercase_ready_report_cannot_export(self):
+        self.assertFalse(can_export_report("account-1", "account-1", "READY"))
+
+    def test_empty_state_report_cannot_export(self):
+        self.assertFalse(can_export_report("account-1", "account-1", ""))
+
+    def test_none_state_report_cannot_export(self):
+        self.assertFalse(can_export_report("account-1", "account-1", None))
+
 
 if __name__ == "__main__":
     unittest.main()
