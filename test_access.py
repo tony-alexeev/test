@@ -12,6 +12,9 @@ class ReportAccessTests(unittest.TestCase):
     def test_anonymous_cannot_view(self):
         self.assertFalse(can_view_report('alice', None))
 
+    def test_empty_owner_and_requester_cannot_view(self):
+        self.assertFalse(can_view_report('', ''))
+
 
 if __name__ == '__main__':
     unittest.main()
