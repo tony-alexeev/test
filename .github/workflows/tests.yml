@@ -1,16 +1,56 @@
-name: Report access tests
+name: Test and publish fixture
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
-  unittest:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python3 -m unittest -q
+      - name: Unit and HTTP tests
+        run: python3 -m unittest discover -v
+      - name: Build the exact revision
+        run: docker build --build-arg APP_VERSION="$GITHUB_SHA" -t "ca06-checked:$GITHUB_SHA" .
+      - name: Smoke the built container
+        run: sh scripts/smoke.sh "ca06-checked:$GITHUB_SHA" "$GITHUB_SHA"
+      - name: Save the checked image for publication
+        if: github.event_name == 'push'
+        run: docker save "ca06-checked:$GITHUB_SHA" -o checked-image.tar
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
+        with:
+          name: checked-image
+          path: checked-image.tar
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    concurrency:
+      group: publish-${{ github.sha }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: checked-image
+      - name: Load the checked image
+        run: docker load -i checked-image.tar
+      - name: Publish once and record the digest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/publish.sh
