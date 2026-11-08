@@ -15,6 +15,18 @@ class CanDownloadInvoiceTests(unittest.TestCase):
         self.assertFalse(can_download_invoice("account-1", "", "issued"))
         self.assertFalse(can_download_invoice("", "account-1", "issued"))
 
+    def test_draft_invoice(self):
+        self.assertFalse(can_download_invoice("account-1", "account-1", "draft"))
+
+    def test_uppercase_issued_status(self):
+        self.assertFalse(can_download_invoice("account-1", "account-1", "ISSUED"))
+
+    def test_empty_status(self):
+        self.assertFalse(can_download_invoice("account-1", "account-1", ""))
+
+    def test_none_status(self):
+        self.assertFalse(can_download_invoice("account-1", "account-1", None))
+
 
 if __name__ == "__main__":
     unittest.main()
