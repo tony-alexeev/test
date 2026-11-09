@@ -18,7 +18,10 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(200, {"sha": os.environ.get("APP_VERSION", "dev")})
             return
         if url.path == "/access":
-            query = parse_qs(url.query)
+            query = parse_qs(url.query, keep_blank_values=True)
+            if len(query.get("owner_id", [])) > 1 or len(query.get("requester_id", [])) > 1:
+                self.respond(400, {"error": "identity parameter must appear once"})
+                return
             owner = query.get("owner_id", [""])[0]
             requester = query.get("requester_id", [None])[0]
             if not owner:
