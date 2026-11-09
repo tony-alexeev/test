@@ -23,6 +23,8 @@ The proposed CA-06 behavior is:
 - **CA06-05:** Given a push to `main` after a merge, CI runs the same checks.
   Only after they pass does it load that checked image and push one SHA tag to
   GHCR. It writes the full digest reference and main SHA to the job summary.
+- **CA06-06 (proposed):** Given repeated identity parameters in an `/access`
+  request, the service returns HTTP 400 instead of selecting one value.
 
 ### Run locally
 
