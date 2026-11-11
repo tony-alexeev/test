@@ -64,6 +64,16 @@ class ServerTests(unittest.TestCase):
             (400, {"error": "identity parameter must appear once"}),
         )
 
+    def test_equal_repeated_identity_parameters_are_rejected(self):
+        self.assertEqual(
+            self.get("/access?owner_id=alice&owner_id=alice&requester_id=alice"),
+            (400, {"error": "identity parameter must appear once"}),
+        )
+        self.assertEqual(
+            self.get("/access?owner_id=alice&requester_id=alice&requester_id=alice"),
+            (400, {"error": "identity parameter must appear once"}),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
